@@ -16,14 +16,7 @@ host:
 
 prometheus:
   # Port to expose the /metrics endpoint on. If unset, defaults to `host.port`
-  # metricsPort: 9543
-
-  service:
-    enabled: false
-#    annotations:
-#      prometheus.io/scrape: "true"
-#      prometheus.io/port: "9543"
-#      prometheus.io/path: "/metrics"
+  # metricsPort: 8181
 
   serviceMonitor:
     # Create prometheus-operator ServiceMonitor
@@ -35,22 +28,14 @@ prometheus:
 
 image:
   repository: jtblin/kube2iam
-  tag: 0.10.7
+  tag: 0.10.4
   pullPolicy: IfNotPresent
-  ## Optionally specify an array of imagePullSecrets.
-  ## Secrets must be manually created in the namespace.
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  ##
-  # pullSecrets:
-  #   - myRegistryKeySecretName
 
 # AWS Access keys to inject as environment variables
 aws:
   secret_key: ""
   access_key: ""
   region: ""
-
-existingSecret: ""
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/

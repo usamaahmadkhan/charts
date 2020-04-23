@@ -1,11 +1,11 @@
 {{- if include "osclass.host" . -}}
-apiVersion: {{ template "osclass.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "osclass.fullname" . }}
   labels:
     app: {{ template "osclass.fullname" . }}
-    chart: {{ template "osclass.chart" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app: {{ template "osclass.fullname" . }}
-        chart: {{ template "osclass.chart" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
 {{- if or .Values.podAnnotations .Values.metrics.enabled }}
       annotations:
@@ -131,6 +131,8 @@ spec:
         volumeMounts:
         - name: osclass-data
           mountPath: /bitnami/osclass
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "osclass.metrics.image" . }}
@@ -162,8 +164,11 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "osclass.fullname" . }}-apache
+      {{- else }}
+        emptyDir: {}
       {{- end }}
 {{- end -}}

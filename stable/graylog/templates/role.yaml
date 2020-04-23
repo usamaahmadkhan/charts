@@ -13,7 +13,8 @@ rules:
 - apiGroups:
     - ""
   resources:
-{{ toYaml .Values.rbac.resources | indent 4 }}
+    - pods
+    - secrets
   verbs:
     - get
     - list

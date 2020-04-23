@@ -1,4 +1,4 @@
-apiVersion: {{ template "jasperreports.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "jasperreports.fullname" . }}
@@ -121,8 +121,4 @@ spec:
           claimName: {{ template "jasperreports.fullname" . }}
       {{- else }}
         emptyDir: {}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
       {{- end }}

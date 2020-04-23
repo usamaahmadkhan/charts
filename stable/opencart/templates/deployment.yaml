@@ -1,11 +1,11 @@
 {{- if include "opencart.host" . -}}
-apiVersion: {{ template "opencart.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "opencart.fullname" . }}
   labels:
     app: {{ template "opencart.fullname" . }}
-    chart: {{ template "opencart.chart" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app: {{ template "opencart.fullname" . }}
-        chart: {{ template "opencart.chart" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
 {{- if or .Values.podAnnotations .Values.metrics.enabled }}
       annotations:
@@ -124,6 +124,8 @@ spec:
         volumeMounts:
         - name: opencart-data
           mountPath: /bitnami/opencart
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "opencart.metrics.image" . }}
@@ -155,8 +157,11 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "opencart.fullname" . }}-apache
+      {{- else }}
+        emptyDir: {}
       {{- end }}
 {{- end -}}

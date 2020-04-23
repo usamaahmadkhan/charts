@@ -1,9 +1,8 @@
 {{- if and .Values.prometheusOperator.enabled .Values.prometheusOperator.serviceMonitor.selfMonitor }}
-apiVersion: monitoring.coreos.com/v1
+apiVersion: {{ printf "%s/v1" (.Values.prometheusOperator.crdApiGroup | default "monitoring.coreos.com") }}
 kind: ServiceMonitor
 metadata:
   name: {{ template "prometheus-operator.fullname" . }}-operator
-  namespace: {{ $.Release.Namespace }}
   labels:
     app: {{ template "prometheus-operator.name" . }}-operator
 {{ include "prometheus-operator.labels" . | indent 4 }}
@@ -16,7 +15,7 @@ spec:
     {{- end }}
 {{- if .Values.prometheusOperator.serviceMonitor.metricRelabelings }}
     metricRelabelings:
-{{ tpl (toYaml .Values.prometheusOperator.serviceMonitor.metricRelabelings | indent 6) . }}
+{{ toYaml .Values.prometheusOperator.serviceMonitor.metricRelabelings | indent 6 }}
 {{- end }}
 {{- if .Values.prometheusOperator.serviceMonitor.relabelings }}
     relabelings:
@@ -25,8 +24,8 @@ spec:
   selector:
     matchLabels:
       app: {{ template "prometheus-operator.name" . }}-operator
-      release: {{ $.Release.Name | quote }}
+      release: {{ .Release.Name | quote }}
   namespaceSelector:
     matchNames:
-      - {{ $.Release.Namespace | quote }}
+      - {{ .Release.Namespace | quote }}
 {{- end }}

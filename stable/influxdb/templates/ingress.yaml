@@ -1,10 +1,13 @@
 {{- if .Values.ingress.enabled -}}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ include "influxdb.fullname" . }}
+  name: {{ template "influxdb.fullname" . }}
   labels:
-    {{- include "influxdb.labels" . | nindent 4 }}
+    app: {{ template "influxdb.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
   annotations:
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 spec:
@@ -20,6 +23,6 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ include "influxdb.fullname" . }}
+          serviceName: {{ template "influxdb.fullname" . }}
           servicePort: 8086
 {{- end -}}

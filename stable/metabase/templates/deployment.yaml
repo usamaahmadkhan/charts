@@ -1,31 +1,21 @@
-apiVersion: {{ template "deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "metabase.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "metabase.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  selector:
-    matchLabels:
-      app: {{ template "metabase.name" . }}
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
-        {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | trim | indent 8 }}
-        {{- end }}
       labels:
         app: {{ template "metabase.name" . }}
         release: {{ .Release.Name }}
-        {{- if .Values.podLabels }}
-{{ toYaml .Values.podLabels | trim | indent 8 }}
-        {{- end }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -52,12 +42,6 @@ spec:
                 name: {{ template "metabase.fullname" . }}-ssl
                 key: password
           {{- end }}
-          {{- if .Values.jetty }}
-            {{- range $key, $value := .Values.jetty }}
-          - name: MB_JETTY_{{ $key | upper }}
-            value: {{ $value | quote }}
-            {{- end }}
-          {{- end }}
           - name: MB_DB_TYPE
             value: {{ .Values.database.type | lower }}
           {{- if .Values.database.encryptionKey }}
@@ -68,12 +52,12 @@ spec:
                 key: encryptionKey
           {{- end }}
           {{- if ne (.Values.database.type | lower) "h2" }}
-            {{- if or .Values.database.existingSecretConnectionURIKey .Values.database.connectionURI }}
+            {{- if .Values.database.connectionURI }}
           - name: MB_DB_CONNECTION_URI
             valueFrom:
               secretKeyRef:
-                name: {{ or .Values.database.existingSecret (printf "%s-database" (include "metabase.fullname" .)) }}
-                key: {{ or .Values.database.existingSecretConnectionURIKey "connectionURI" }}
+                name: {{ template "metabase.fullname" . }}-database
+                key: connectionURI
             {{- else }}
           - name: MB_DB_HOST
             value: {{ .Values.database.host | quote }}
@@ -84,13 +68,13 @@ spec:
           - name: MB_DB_USER
             valueFrom:
               secretKeyRef:
-                name: {{ or .Values.database.existingSecret (printf "%s-database" (include "metabase.fullname" .)) }}
-                key: {{ or .Values.database.existingSecretUsernameKey "username" }}
+                name: {{ template "metabase.fullname" . }}-database
+                key: username
           - name: MB_DB_PASS
             valueFrom:
               secretKeyRef:
-                name: {{ or .Values.database.existingSecret (printf "%s-database" (include "metabase.fullname" .)) }}
-                key: {{ or .Values.database.existingSecretPasswordKey "password" }}
+                name: {{ template "metabase.fullname" . }}-database
+                key: password
             {{- end }}
           {{- end }}
           - name: MB_PASSWORD_COMPLEXITY
@@ -120,16 +104,16 @@ spec:
             httpGet:
               path: /
               port: {{ .Values.service.internalPort }}
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: 120
+            timeoutSeconds: 5
+            failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /
               port: {{ .Values.service.internalPort }}
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+            periodSeconds: 5
           {{- if .Values.log4jProperties }}
           volumeMounts:
             - name: config
@@ -137,17 +121,9 @@ spec:
           {{- end}}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-    {{- with .Values.nodeSelector }}
+    {{- if .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
+{{ toYaml .Values.nodeSelector | indent 8 }}
     {{- end }}
       volumes:
         {{- if .Values.log4jProperties}}

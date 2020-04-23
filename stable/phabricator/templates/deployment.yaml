@@ -1,24 +1,24 @@
 {{- if include "phabricator.host" . -}}
-apiVersion: {{ template "phabricator.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "phabricator.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "phabricator.name" . }}
-    helm.sh/chart: {{ include "phabricator.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: {{ template "phabricator.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "phabricator.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app: {{ template "phabricator.fullname" . }}
+      release: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "phabricator.name" . }}
-        helm.sh/chart: {{ include "phabricator.chart" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        app: {{ template "phabricator.fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
 {{- if or .Values.podAnnotations .Values.metrics.enabled }}
       annotations:
   {{- if .Values.podAnnotations }}
@@ -127,6 +127,8 @@ spec:
         volumeMounts:
         - name: phabricator-data
           mountPath: /bitnami/phabricator
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "phabricator.metrics.image" . }}
@@ -154,7 +156,14 @@ spec:
       - name: phabricator-data
       {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:
-          claimName: {{ template "phabricator.fullname" . }}
+          claimName: {{ template "phabricator.fullname" . }}-phabricator
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "phabricator.fullname" . }}-apache
       {{- else }}
         emptyDir: {}
       {{- end }}

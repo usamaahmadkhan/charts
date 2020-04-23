@@ -22,8 +22,7 @@ spec:
     scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
     {{- end }}
     {{- if .Values.serviceMonitor.params.enabled }}
-    params:
-{{ toYaml .Values.serviceMonitor.params.conf | indent 6 }}
+{{ toYaml .Values.conf.params.conf | indent 6 }}
     {{- end }}
   selector:
     matchLabels:

@@ -49,9 +49,6 @@ rbac:
 podSecurityPolicy:
   enabled: false
 
-## Set pod priorityClassName
-# priorityClassName: ""
-
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
   create: true

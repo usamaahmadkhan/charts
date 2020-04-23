@@ -1,4 +1,4 @@
-apiVersion: {{ template "drupal.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "drupal.fullname" . }}
@@ -108,6 +108,10 @@ spec:
         volumeMounts:
         - name: drupal-data
           mountPath: {{ .Values.volumeMounts.drupal.mountPath }}
+        {{- if .Values.volumeMounts.apache.mountPath }}
+        - name: apache-data
+          mountPath: {{ .Values.volumeMounts.apache.mountPath }}
+        {{- end }}
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "drupal.metrics.image" . }}
@@ -139,7 +143,12 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
+      {{- if .Values.volumeMounts.apache.mountPath }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "drupal.fullname" . }}-apache
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
       {{- end }}

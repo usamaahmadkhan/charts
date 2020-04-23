@@ -7,15 +7,15 @@ metadata:
   namespace: {{ .Values.prometheus.serviceMonitor.namespace }}
   {{- end }}
   labels:
-    app.kubernetes.io/name: {{ template "kube2iam.name" . }}
-    helm.sh/chart: {{ template "kube2iam.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: {{ template "kube2iam.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ template "kube2iam.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app: {{ template "kube2iam.name" . }}
+      release: {{ .Release.Name }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

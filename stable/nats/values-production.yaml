@@ -13,26 +13,14 @@
 image:
   registry: docker.io
   repository: bitnami/nats
-  tag: 2.1.4-debian-10-r24
-  ## Specify a imagePullPolicy
-  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-  ##
-  pullPolicy: IfNotPresent
+  tag: 1.4.1
+  pullPolicy: Always
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   ##
   # pullSecrets:
   #   - name: myRegistryKeySecretName
-
-## String to partially override nats.fullname template (will maintain the release name)
-##
-# nameOverride:
-
-## String to fully override nats.fullname template
-##
-# fullnameOverride:
 
 ## NATS replicas
 replicaCount: 3
@@ -168,7 +156,7 @@ networkPolicy:
   enabled: true
 
   ## The Policy model to apply. When set to false, only pods with the correct
-  ## client labels will have network access to the port NATS is listening
+  ## client label will have network access to the port NATS is listening
   ## on. When true, NATS will accept connections from any source
   ## (with the correct destination port).
   ##
@@ -195,15 +183,10 @@ client:
     ## otherwise leave blank
     ##
     # loadBalancerIP:
-
 ## Kubernetes svc used for clustering
 ## ref: https://github.com/nats-io/gnatsd#clustering
 ##
 cluster:
-  ## Use connectRetries to configure number of connect retries for implicit routes,
-  ## otherwise leave blank
-  ##
-  # connectRetries:
   service:
     ## Kubernetes service type
     type: ClusterIP
@@ -221,7 +204,6 @@ cluster:
     ## otherwise leave blank
     ##
     # loadBalancerIP:
-
 ## NATS svc used for monitoring
 ## ref: https://github.com/nats-io/gnatsd#monitoring
 ##
@@ -266,7 +248,7 @@ ingress:
     ## kubernetes.io/tls-acme: true
     ##
     ## For a full list of possible ingress annotations, please see
-    ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+    ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/annotations.md
     ##
     ## If tls is set to true, annotation ingress.kubernetes.io/secure-backends: "true" will automatically be set
     annotations:
@@ -290,14 +272,6 @@ ingress:
 # Optional additional arguments
 extraArgs: []
 
-## Nats filenames:
-##  - For Nats 1.x.x version, some filenames (binary, configuration file, pid file) uses `gnatsd` as part of the name.
-##  - For Nats 2.x.x version, those filenames now uses `nats-server`
-## In order to make the chart compatible with NATS versions 1.0.0 and 2.0.0 we have parametrized the following value
-## to specify the proper filename according to the image version.
-##
-natsFilename: nats-server
-
 ## Metrics / Prometheus NATS Exporter
 ##
 ## ref: https://github.com/nats-io/prometheus-nats-exporter
@@ -305,8 +279,8 @@ metrics:
   enabled: true
   image:
     registry: docker.io
-    repository: bitnami/nats-exporter
-    tag: 0.6.0-debian-10-r28
+    repository: synadia/prometheus-nats-exporter
+    tag: 0.1.0
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.

@@ -1,4 +1,3 @@
-{{- if .Values.test.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,4 +9,3 @@ data:
       echo "Trying Atlantis at: $ATLANTIS_URL"
       curl $ATLANTIS_URL
     }
-{{- end }}

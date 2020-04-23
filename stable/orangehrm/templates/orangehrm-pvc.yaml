@@ -14,5 +14,11 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistence.orangehrm.size | quote }}
-  {{ include "orangehrm.storageClass" . }}
+{{- if .Values.persistence.orangehrm.storageClass }}
+{{- if (eq "-" .Values.persistence.orangehrm.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistence.orangehrm.storageClass }}"
+{{- end }}
+{{- end }}
 {{- end -}}

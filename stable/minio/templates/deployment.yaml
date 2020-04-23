@@ -1,6 +1,5 @@
 {{- if eq .Values.mode "standalone" }}
-{{ $bucketRoot := or ($.Values.bucketRoot) ($.Values.mountPath) }}
-apiVersion: {{ template "minio.deployment.apiVersion" . }}
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "minio.fullname" . }}
@@ -16,6 +15,8 @@ spec:
     rollingUpdate:
       maxSurge: {{ .Values.DeploymentUpdate.maxSurge }}
       maxUnavailable: {{ .Values.DeploymentUpdate.maxUnavailable }}
+    {{- else }}
+    rollingUpdate: null
     {{- end}}
   {{- if .Values.nasgateway.enabled }}
   replicas: {{ .Values.nasgateway.replicas }}
@@ -32,9 +33,6 @@ spec:
   {{- if .Values.ossgateway.enabled }}
   replicas: {{ .Values.ossgateway.replicas }}
   {{- end }}
-  {{- if .Values.b2gateway.enabled }}
-  replicas: {{ .Values.b2gateway.replicas }}
-  {{- end }}
   selector:
     matchLabels:
       app: {{ template "minio.name" . }}
@@ -45,27 +43,14 @@ spec:
       labels:
         app: {{ template "minio.name" . }}
         release: {{ .Release.Name }}
-{{- if .Values.podLabels }}
-{{ toYaml .Values.podLabels | indent 8 }}
-{{- end }}
+      {{- if .Values.podAnnotations }}
       annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
-        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-{{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | trimSuffix "\n" | indent 8 }}
-{{- end }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
   {{- if .Values.priorityClassName }}
       priorityClassName: "{{ .Values.priorityClassName }}"
   {{- end }}
-      serviceAccountName: {{ include "minio.serviceAccountName" . | quote }}
-{{- if and .Values.securityContext.enabled .Values.persistence.enabled }}
-      securityContext:
-        runAsUser: {{ .Values.securityContext.runAsUser }}
-        runAsGroup: {{ .Values.securityContext.runAsGroup }}
-        fsGroup: {{ .Values.securityContext.fsGroup }}
-{{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -73,44 +58,39 @@ spec:
           {{- if .Values.s3gateway.enabled }}
           command: [ "/bin/sh",
           "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway s3 {{ .Values.s3gateway.serviceEndpoint }} {{- template `minio.extraArgs` . }}" ]
+          "/usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} gateway s3 {{ .Values.s3gateway.serviceEndpoint }}" ]
           {{- else }}
           {{- if .Values.azuregateway.enabled }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway azure {{- template `minio.extraArgs` . }}" ]
+          command: [ "/bin/sh", 
+          "-ce", 
+          "/usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} gateway azure" ]
           {{- else }}
           {{- if .Values.gcsgateway.enabled }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway gcs {{ .Values.gcsgateway.projectId }} {{- template `minio.extraArgs` . }}" ]
+          command: [ "/bin/sh", 
+          "-ce", 
+          "/usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} gateway gcs {{ .Values.gcsgateway.projectId }}" ]
           {{- else }}
           {{- if .Values.ossgateway.enabled }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway oss {{ .Values.ossgateway.endpointURL }} {{- template `minio.extraArgs` . }}" ]
+          command: [ "/bin/sh", 
+          "-ce", 
+          "cp /tmp/config.json {{ .Values.configPath }} && 
+          /usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} gateway oss {{ .Values.ossgateway.endpointURL }}" ]
           {{- else }}
           {{- if .Values.nasgateway.enabled }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway nas {{ $bucketRoot }} {{- template `minio.extraArgs` . }}" ]
+          command: [ "/bin/sh", 
+          "-ce", 
+          "/usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} gateway nas {{ .Values.mountPath }}" ]
           {{- else }}
-          {{- if .Values.b2gateway.enabled }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} gateway b2 {{- template `minio.extraArgs` . }}" ]
-          {{- else }}
-          command: [ "/bin/sh",
-          "-ce",
-          "/usr/bin/docker-entrypoint.sh minio -S {{ .Values.certsPath }} server {{ $bucketRoot }} {{- template `minio.extraArgs` . }}" ]
-          {{- end }}
+          command: [ "/bin/sh", 
+          "-ce", 
+          "/usr/bin/docker-entrypoint.sh minio -C {{ .Values.configPath }} server {{ .Values.mountPath }}" ]
           {{- end }}
           {{- end }}
           {{- end }}
           {{- end }}
           {{- end }}
           volumeMounts:
-            {{- if and .Values.persistence.enabled (not .Values.gcsgateway.enabled) (not .Values.azuregateway.enabled) (not .Values.s3gateway.enabled) (not .Values.b2gateway.enabled) }}
+            {{- if and .Values.persistence.enabled (not .Values.gcsgateway.enabled) (not .Values.azuregateway.enabled) (not .Values.s3gateway.enabled) }}
             - name: export
               mountPath: {{ .Values.mountPath }}
               {{- if .Values.persistence.subPath }}
@@ -122,16 +102,14 @@ spec:
               mountPath: "/etc/credentials"
               readOnly: true
             {{- end }}
+            - name: minio-config-dir
+              mountPath: {{ .Values.configPath }}
             {{- if .Values.tls.enabled }}
             - name: cert-secret-volume
-              mountPath: {{ .Values.certsPath }}
+              mountPath: {{ .Values.configPath }}certs
             {{ end }}
           ports:
-            {{- if .Values.tls.enabled }}
-            - name: https
-            {{ else }}
-            - name: http
-            {{- end }}
+            - name: service
               containerPort: 9000
           env:
             - name: MINIO_ACCESS_KEY
@@ -155,11 +133,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /minio/health/live
-              {{- if .Values.tls.enabled }}
-              port: https
-              {{ else }}
-              port: http
-              {{- end }}
+              port: service
               {{- if .Values.tls.enabled }}
               scheme: HTTPS
               {{ else }}
@@ -176,11 +150,7 @@ spec:
               scheme: HTTPS
               {{- end }}
               path: /minio/health/ready
-              {{- if .Values.tls.enabled }}
-              port: https
-              {{ else }}
-              port: http
-              {{- end }}
+              port: service
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
@@ -201,7 +171,7 @@ spec:
 {{ toYaml . | indent 8 }}
 {{- end }}
       volumes:
-        {{- if and (not .Values.gcsgateway.enabled) (not .Values.azuregateway.enabled) (not .Values.s3gateway.enabled) (not .Values.b2gateway.enabled) }}
+        {{- if and ((not .Values.gcsgateway.enabled) (not .Values.azuregateway.enabled) (not .Values.s3gateway.enabled)) }}
         - name: export
         {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
@@ -213,6 +183,8 @@ spec:
         - name: minio-user
           secret:
             secretName: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ template "minio.fullname" . }}{{ end }}
+        - name: minio-config-dir
+          emptyDir: {}
         {{- if .Values.tls.enabled }}
         - name: cert-secret-volume
           secret:

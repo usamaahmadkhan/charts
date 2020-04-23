@@ -16,19 +16,19 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- if .Values.pvc.enablePVC }}
-  {{- range $key, $val := omit .Values.pvc "enablePVC" }}
+  {{- range $key, $val := .Values.pvc }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- else if .Values.gcs.enableGCS }}
-  {{- range $key, $val := omit .Values.gcs "enableGCS" }}
+  {{- range $key, $val := .Values.gcs }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- else if .Values.s3.enableS3 }}
-  {{- range $key, $val := omit .Values.s3 "enableS3" }}
+  {{- range $key, $val := .Values.s3 }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- else if .Values.wasbs.enableWASBS }}
-  {{- range $key, $val := omit .Values.wasbs "enableWASBS" }}
+  {{- range $key, $val := .Values.wasbs }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- else }}

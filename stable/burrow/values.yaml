@@ -1,9 +1,10 @@
 image:
   repository: hyperledger/burrow
-  tag: 0.29.0
+  tag: 0.25.1
   pullPolicy: IfNotPresent
 
 chain:
+  nodes: 1
   logLevel: info
   extraSeeds: []
   testing: false
@@ -52,10 +53,10 @@ config:
         OutputType: "stderr"
         Format: "json"
 
-validators:
-- name: Validator_0
-  address: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-  nodeAddress: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+validatorAddresses:
+  Validator_0:
+    Address: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    NodeAddress: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 contracts:
   # wait required to ensure chain readiness
@@ -78,36 +79,37 @@ persistence:
   accessMode: ReadWriteOnce
   persistentVolumeReclaimPolicy: "Retain"
 
-peer:
-  service:
-    type: ClusterIP
-  ingress:
-    enabled: false
-    hosts: []
+RPC:
+  Peer:
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: false
+      hosts: []
 
-grpc:
-  service:
-    type: ClusterIP
-    loadBalance: true
-  ingress:
-    enabled: false
-    hosts: []
-    annotations: {}
-    tls: {}
+  GRPC:
+    service:
+      type: ClusterIP
+      loadBalance: true
+    ingress:
+      enabled: false
+      hosts: []
+      annotations: {}
+      tls: {}
 
-info:
-  service:
-    type: ClusterIP
-    loadBalance: true
-  ingress:
-    enabled: false
-    # exposing partial ingress only exposes
-    # the /accounts and /blocks paths outside the cluster
-    partial: false
-    pathLeader: "/"
-    annotations: {}
-    hosts: []
-    tls: {}
+  Info:
+    service:
+      type: ClusterIP
+      loadBalance: true
+    ingress:
+      enabled: false
+      # exposing partial ingress only exposes
+      # the /accounts and /blocks paths outside the cluster
+      partial: false
+      pathLeader: "/"
+      annotations: {}
+      hosts: []
+      tls: {}
 
 # resources:
 #   limits:
@@ -119,7 +121,7 @@ info:
 
 livenessProbe:
   enabled: true
-  path: /status?block_seen_time_within=10m
+  path: /status?block_seen_time_within=3m
   initialDelaySeconds: 240
   timeoutSeconds: 1
   periodSeconds: 30

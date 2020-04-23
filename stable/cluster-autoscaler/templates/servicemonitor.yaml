@@ -13,12 +13,11 @@ metadata:
 spec:
   selector:
     matchLabels:
-{{ include "cluster-autoscaler.instance-name" . | indent 6 }}
+      app: {{ template "cluster-autoscaler.name" . }}
+      release: {{ .Release.Name }}
   endpoints:
   - port: {{ .Values.service.portName }}
     interval: {{ .Values.serviceMonitor.interval }}
-    path: {{ .Values.serviceMonitor.path }}
   namespaceSelector:
-    matchNames:
-      - {{.Release.Namespace}}
+    any: true
 {{ end }} 

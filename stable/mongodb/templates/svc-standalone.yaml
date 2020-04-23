@@ -2,14 +2,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "mongodb.serviceName" . }}
+  name: {{ template "mongodb.fullname" . }}
   labels:
     app: {{ template "mongodb.name" . }}
     chart: {{ template "mongodb.chart" . }}
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-{{- with .Values.service.annotations }}
-  annotations: {{ tpl (toYaml .) $ | nindent 4 }}
+{{- if .Values.service.annotations }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
 {{- end }}
 spec:
   type: {{ .Values.service.type }}
@@ -20,14 +21,13 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   {{- if .Values.service.externalIPs }}
-  externalIPs: {{ toYaml .Values.service.externalIPs | nindent 4 }}
+  externalIPs:
+  {{ toYaml .Values.service.externalIPs | indent 4 }}
   {{- end }}
-  {{- if .Values.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges: {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
-  {{- end }}
+
   ports:
   - name: mongodb
-    port: {{ .Values.service.port }}
+    port: 27017
     targetPort: mongodb
 {{- if .Values.service.nodePort }}
     nodePort: {{ .Values.service.nodePort }}

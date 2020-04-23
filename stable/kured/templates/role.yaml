@@ -10,20 +10,9 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 rules:
-  # Allow kured to lock/unlock itself
-  - apiGroups:     ["extensions"]
-    resources:     ["daemonsets"]
-    resourceNames: ["{{ template "kured.fullname" . }}"]
-    verbs:         ["update", "patch"]
-  - apiGroups:     ["apps"]
-    resources:     ["daemonsets"]
-    resourceNames: ["{{ template "kured.fullname" . }}"]
-    verbs:         ["update"]
-{{- if .Values.podSecurityPolicy.create }}
-  - apiGroups:     ["extensions"]
-    resources:     ["podsecuritypolicies"]
-    resourceNames: ["{{ template "kured.fullname" . }}"]
-    verbs:         ["use"]
-{{- end }}
-
+# Allow kured to lock/unlock itself
+- apiGroups:     ["extensions"]
+  resources:     ["daemonsets"]
+  resourceNames: ["{{ template "kured.fullname" . }}"]
+  verbs:         ["update"]
 {{- end -}}

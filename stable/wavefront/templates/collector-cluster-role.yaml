@@ -27,14 +27,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - update
-  - create
-- apiGroups:
   - extensions
   resources:
   - deployments
@@ -42,7 +34,4 @@ rules:
   - get
   - list
   - watch
-- nonResourceURLs: ["/metrics"]
-  verbs:
-  - get
 {{- end }}

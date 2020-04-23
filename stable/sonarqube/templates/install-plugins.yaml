@@ -9,10 +9,9 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   install_plugins.sh: |-
-    cd {{ .Values.sonarqubeFolder }}/extensions/plugins/tmp
+    cd /opt/sonarqube/extensions/plugins/tmp
     {{- if .Values.plugins.install }}
-      {{ range $index, $val := .Values.plugins.install }}echo {{ $val | quote }} >> plugins.txt
-      {{ end }}
-      cat plugins.txt | xargs -n 1 -P 8 wget --no-check-certificate
-      rm plugins.txt
+      {{- range $index, $val := .Values.plugins.install }}
+        wget {{ $val }} --no-check-certificate
+      {{- end }}
     {{- end }}

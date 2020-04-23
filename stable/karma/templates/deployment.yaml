@@ -7,10 +7,6 @@ metadata:
     helm.sh/chart: {{ include "karma.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- with .Values.deployment.annotations }}
-  annotations:
-{{ toYaml . | indent 4 }}
-{{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -28,10 +24,6 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ template "karma.serviceAccountName" . }}
-      {{- if .Values.securityContext }}
-      securityContext:
-{{ toYaml .Values.securityContext | indent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -52,25 +44,20 @@ spec:
             httpGet:
               path: {{ .Values.livenessProbe.path }}
               port: http
-            initialDelaySeconds: {{ .Values.livenessProbe.delay }}
-            periodSeconds: {{ .Values.livenessProbe.period }}
+              initialDelaySeconds: {{ .Values.livenessProbe.delay }}
+              periodSeconds: {{ .Values.livenessProbe.period }}
           readinessProbe:
             httpGet:
               path: {{ .Values.livenessProbe.path }}
               port: http
-            initialDelaySeconds: {{ .Values.livenessProbe.delay }}
-            periodSeconds: {{ .Values.livenessProbe.period }}
+              initialDelaySeconds: {{ .Values.livenessProbe.delay }}
+              periodSeconds: {{ .Values.livenessProbe.period }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-          volumeMounts:
           {{- if .Values.configMap.enabled }}
+          volumeMounts:
             - name: karma-config
               mountPath: /etc/karma
-          {{- end }}
-          {{- range .Values.certSecretNames }}
-            - name: {{ . }}
-              mountPath: /etc/certs/{{ . }}
-              readOnly: true
           {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -84,15 +71,9 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
-      volumes:
       {{- if .Values.configMap.enabled }}
+      volumes:
       - name: karma-config
         configMap:
           name: {{ .Release.Name }}-config
-      {{- end }}
-      {{- range .Values.certSecretNames }}
-      - name: {{ . }}
-        secret:
-          defaultMode: 420
-          secretName: {{ . }}
       {{- end }}

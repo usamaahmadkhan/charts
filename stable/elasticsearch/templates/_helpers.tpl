@@ -97,13 +97,7 @@ plugin installer template
     - "-c"
     - |
       {{- range .Values.cluster.plugins }}
-      PLUGIN_NAME="{{ . }}"
-      echo "Installing $PLUGIN_NAME..."
-      if /usr/share/elasticsearch/bin/elasticsearch-plugin list | grep "$PLUGIN_NAME" > /dev/null; then
-        echo "Plugin $PLUGIN_NAME already exists, skipping."
-      else
-        /usr/share/elasticsearch/bin/elasticsearch-plugin install -b $PLUGIN_NAME
-      fi
+      /usr/share/elasticsearch/bin/elasticsearch-plugin install -b {{ . }}
       {{- end }}
   volumeMounts:
   - mountPath: /usr/share/elasticsearch/plugins/

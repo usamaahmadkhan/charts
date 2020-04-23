@@ -1,4 +1,4 @@
-apiVersion: {{ template "orangehrm.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "orangehrm.fullname" . }}
@@ -109,6 +109,8 @@ spec:
         volumeMounts:
         - name: orangehrm-data
           mountPath: /bitnami/orangehrm
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "orangehrm.metrics.image" . }}
@@ -140,7 +142,10 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "orangehrm.fullname" . }}-apache
+      {{- else }}
+        emptyDir: {}
       {{- end }}

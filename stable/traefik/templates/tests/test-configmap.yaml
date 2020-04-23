@@ -1,4 +1,3 @@
-{{- if .Values.testFramework.enabled  }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,4 +12,4 @@ data:
     @test "Test Access" {
       curl -D - http://{{ template "traefik.fullname" . }}/
     }
-{{- end }}
+

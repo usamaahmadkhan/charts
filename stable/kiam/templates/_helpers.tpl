@@ -101,7 +101,8 @@ Generate certificates for kiam server and agent
 {{.Values.agent.tlsCerts.keyFileName }}: {{ $cert.Key | b64enc }}
 {{- end -}}
 {{- define "kiam.server.gen-certs" -}}
-{{- $altNames := list (include "kiam.server.fullname" .) (printf "%s:%d" (include "kiam.server.fullname" .) .Values.server.service.port) (printf "127.0.0.1:%d" .Values.server.service.targetPort) -}}
+{{- $serverName := printf "%s-%s" (include "kiam.name" .) .Values.server.name -}}
+{{- $altNames := list $serverName (printf "%s:%s" $serverName .Values.server.service.port) (printf "127.0.0.1:%s" .Values.server.service.targetPort) -}}
 {{- $ca := .ca | default (genCA "kiam-ca" 365) -}}
 {{- $_ := set . "ca" $ca -}}
 {{- $cert := genSignedCert "Kiam Server" (list "127.0.0.1") $altNames 365 $ca -}}

@@ -1,9 +1,4 @@
-# DEPRECATED - Telegraf
-
-**This chart has been deprecated and moved to its new home:**
-
-- **GitHub repo:** https://github.com/influxdata/helm-charts
-- **Charts repo:** https://helm.influxdata.com/
+# Telegraf
 
 [Telegraf](https://github.com/influxdata/telegraf) is a plugin-driven server agent written by the folks over at [InfluxData](https://influxdata.com) for collecting & reporting metrics.
 

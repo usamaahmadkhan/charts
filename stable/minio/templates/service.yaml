@@ -24,11 +24,7 @@ spec:
   type: {{ .Values.service.type }}
 {{- end }}
   ports:
-    {{- if .Values.tls.enabled }}
-    - name: https
-    {{ else }}
-    - name: http
-    {{- end }}
+    - name: service
       port: {{ .Values.service.port }}
       protocol: TCP
 {{- if (and (eq .Values.service.type "NodePort") ( .Values.service.nodePort)) }}

@@ -2,17 +2,13 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "prometheus-pushgateway.fullname" .  }}
+  name: {{ template "prometheus-pushgateway.name" .  }}
   {{- if .Values.serviceMonitor.namespace }}
   namespace: {{ .Values.serviceMonitor.namespace }}
   {{- end }}
   labels:
-    app: {{ template "prometheus-pushgateway.name" . }}
-    chart: {{ template "prometheus-pushgateway.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
-    {{- if .Values.serviceMonitor.additionalLabels }}
-{{ toYaml .Values.serviceMonitor.additionalLabels | indent 4 }}
+    {{- range $key, $value := .Values.serviceMonitor.selector }}
+    {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
   endpoints:
@@ -20,16 +16,8 @@ spec:
     {{- if .Values.serviceMonitor.interval }}
     interval: {{ .Values.serviceMonitor.interval }}
     {{- end }}
-    {{- if .Values.serviceMonitor.scrapeTimeout }}
-    scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
-    {{- end }}
-    path: /metrics
     honorLabels: {{ .Values.serviceMonitor.honorLabels }}
-  namespaceSelector:
-    matchNames:
-      - {{ .Release.Namespace }}
   selector:
     matchLabels:
       app: {{ template "prometheus-pushgateway.name" . }}
-      release: {{ .Release.Name }}
 {{- end -}}

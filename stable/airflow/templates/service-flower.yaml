@@ -1,4 +1,4 @@
-{{- if .Values.flower.enabled -}}
+{{- if .Values.workers.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,12 +9,8 @@ metadata:
     chart: {{ template "airflow.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  annotations:
-  {{- if .Values.flower.service.annotations }}
-{{ toYaml .Values.flower.service.annotations | trim | indent 4 }}
-  {{- end }}
 spec:
-  type: {{ .Values.flower.service.type | default "ClusterIP" }}
+  type: {{ .Values.airflow.service.type }}
   selector:
     app: {{ template "airflow.name" . }}
     component: flower
@@ -22,6 +18,5 @@ spec:
   ports:
     - name: flower
       protocol: TCP
-      port: {{ .Values.flower.service.externalPort | default 5555 }}
-      targetPort: 5555
+      port: 5555
 {{- end }}

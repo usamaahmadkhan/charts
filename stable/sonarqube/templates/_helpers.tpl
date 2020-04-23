@@ -34,7 +34,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- if .Values.postgresql.enabled -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- printf "%s" .Values.postgresql.postgresqlServer -}}
+{{- printf "%s" .Values.postgresql.postgresServer -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "metallb.fullname" . }}-controller
@@ -34,9 +34,8 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
+    {{- with .Values.controller.nodeSelector }}
       nodeSelector:
-        "beta.kubernetes.io/os": linux
-        {{- with .Values.controller.nodeSelector }}
 {{ toYaml . | indent 8 }}
     {{- end }}
     {{- with .Values.controller.tolerations }}
@@ -63,5 +62,5 @@ spec:
           allowPrivilegeEscalation: false
           capabilities:
             drop:
-            - all
+            - ALL
           readOnlyRootFilesystem: true

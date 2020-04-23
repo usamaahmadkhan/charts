@@ -8,17 +8,20 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  REGION: {{ .Values.region | quote }}
+  API_SERVER_PORT: "{{ .Values.agent.service.port }}"
   {{- range $key, $val := .Values.agent.config }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
-  {{- if .Values.serverBaseUrl }}
-  SERVER_BASE_URL: {{ default "" .Values.serverBaseUrl | quote }}
+  {{- if .Values.customUrl }}
+  SERVER_BASE_URL: {{ default "" .Values.customUrl.serverBaseUrl | quote }}
+  EVENTS_RECEIVER_URL: {{ default "" .Values.customUrl.eventsRecieverUrl | quote }}
+  LOGS_RECEIVER_URL: {{ default "" .Values.customUrl.logsReceiverUrl | quote }}
+  {{- else if eq .Values.region "EU" }}
+  SERVER_BASE_URL: "https://spm-receiver.eu.sematext.com"
+  EVENTS_RECEIVER_URL: "https://event-receiver.eu.sematext.com"
+  LOGS_RECEIVER_URL: "https://logsene-receiver.eu.sematext.com"
+  {{- else if eq .Values.region "US" }}
+  SERVER_BASE_URL: "https://spm-receiver.sematext.com"
+  EVENTS_RECEIVER_URL: "https://event-receiver.sematext.com"
+  LOGS_RECEIVER_URL: "https://logsene-receiver.sematext.com"
   {{- end }}
-  {{- if .Values.eventsReceiverUrl }}
-  EVENTS_RECEIVER_URL: {{ default "" .Values.eventsReceiverUrl | quote }}
-  {{- end }}
-  {{- if .Values.logsReceiverUrl }}
-  LOGS_RECEIVER_URL: {{ default "" .Values.logsReceiverUrl | quote }}
-  {{- end }}
-  API_SERVER_PORT: "{{ .Values.agent.service.port }}"

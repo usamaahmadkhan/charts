@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "stolon.fullname" . }}-sentinel
@@ -23,7 +23,7 @@ spec:
         stolon-cluster: {{ template "stolon.fullname" . }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/hooks/update-cluster-spec-job.yaml") . | sha256sum }}
-{{- with .Values.sentinel.annotations }}
+{{- with .Values.keeper.annotations }}
 {{ toYaml . | indent 8 }}
 {{- end }}
     spec:
@@ -31,10 +31,6 @@ spec:
       priorityClassName: "{{ .Values.sentinel.priorityClassName }}"
 {{- end }}
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
-{{- if .Values.image.pullSecrets }}
-      imagePullSecrets:
-{{ toYaml .Values.image.pullSecrets | indent 8 }}
-{{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -61,12 +57,9 @@ spec:
               value: {{ .Values.store.endpoints | quote}}
             {{- end }}
             - name: STSENTINEL_METRICS_LISTEN_ADDRESS
-              value: "0.0.0.0:{{ .Values.ports.metrics.containerPort }}"
+              value: "0.0.0.0:8080"
             - name: STSENTINEL_DEBUG
               value: {{ .Values.debug | quote}}
-{{- if .Values.sentinel.extraEnv }}
-{{ toYaml .Values.sentinel.extraEnv | indent 12 }}
-{{- end }}
           ports:
 {{- range $key, $value := .Values.ports }}
             - name: {{ $key }}

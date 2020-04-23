@@ -41,14 +41,3 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Define the http port of the Ambassador service
-*/}}
-{{- define "ambassador.servicePort" -}}
-{{- range .Values.service.ports -}}
-{{- if (eq .name "http") -}}
-{{ default .port }}
-{{- end -}}
-{{- end -}}
-{{- end -}}

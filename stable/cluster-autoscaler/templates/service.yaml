@@ -6,7 +6,10 @@ metadata:
 {{ toYaml .Values.service.annotations | indent 4 }}
 {{- end }}
   labels:
-{{ include "cluster-autoscaler.labels" . | indent 4 }}
+    app: {{ template "cluster-autoscaler.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
   name: {{ template "cluster-autoscaler.fullname" . }}
 spec:
 {{- if .Values.service.clusterIP }}
@@ -29,5 +32,6 @@ spec:
       targetPort: 8085
       name: {{ .Values.service.portName }}
   selector:
-{{ include "cluster-autoscaler.instance-name" . | indent 4 }}
+    app: {{ template "cluster-autoscaler.name" . }}
+    release: {{ .Release.Name }}
   type: "{{ .Values.service.type }}"

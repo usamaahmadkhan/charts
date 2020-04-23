@@ -49,19 +49,13 @@ The following tables lists the configurable parameters of the LogDNA Agent chart
 
 Parameter | Description | Default
 --- | --- | ---
-`daemonset.tolerations` | List of node taints to tolerate | `[]`
-`daemonset.updateStrategy` | Optionally set an update strategy on the daemonset. | None
-`image.pullPolicy` | Image pull policy | `IfNotPresent`
-`image.tag` | Image tag | `latest`
-`logdna.autoupdate` | Optionally turn on autoupdate by setting to 1 (auto sets image.pullPolicy to always) | `0`
 `logdna.key` | LogDNA Ingestion Key (Required) | None
 `logdna.tags` | Optional tags such as `production` | None
-`priorityClassName` | (Optional) Set a PriorityClass on the Daemonset | `""`
+`logdna.autoupdate` | Optionally turn on autoupdate by setting to 1 (auto sets image.pullPolicy to always) | `0`
+`image.pullPolicy` | Image pull policy | `IfNotPresent`
+`image.tag` | Image tag | `latest`
 `resources.limits.memory` | Memory resource limits | 500Mi                                      |
-`updateOnSecretChange` | Optionally set annotation on daemonset to cause deploy when secret changes | None
-`extraEnv` | Additional environment variables | `{}`
-`extraVolumeMounts` | Additional Volume mounts | `[]`
-`extraVolumes` | Additional Volumes | `[]`
+`tolerations` | List of node taints to tolerate | `[]`
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

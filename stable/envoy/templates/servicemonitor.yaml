@@ -27,12 +27,4 @@ spec:
     matchLabels:
       app: {{ template "envoy.name" . }}
       release: {{ .Release.Name }}
-  {{- with .Values.serviceMonitor.targetLabels }}
-  targetLabels:
-{{ toYaml . | trim | indent 4 -}}
-  {{- end }}
-  {{- with .Values.serviceMonitor.podTargetLabels }}
-  podTargetLabels:
-{{ toYaml . | trim | indent 4 -}}
-  {{- end }}
-{{- end }}
+{{- end }} 

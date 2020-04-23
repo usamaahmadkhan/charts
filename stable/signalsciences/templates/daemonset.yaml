@@ -32,22 +32,20 @@ spec:
 {{ toYaml .Values.daemonset.nodeSelector | indent 8 }}
       {{- end }}
       volumes:
-        - name: sigsci-tmp
+        - name: var-run
           hostPath:
-            path: {{ .Values.signalsciences.agentTempVolume}}
+            path: {{ .Values.signalsciences.socketDir }}
       containers:
         - name: sigsci-agent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
-              - mountPath: {{ .Values.signalsciences.agentTempVolume }}
-                name: sigsci-tmp
+              - mountPath: {{ .Values.signalsciences.socketDir }}
+                name: var-run
                 readOnly: false
           env:
-      {{- if .Values.signalsciences.socketAddress }}
             - name: SIGSCI_RPC_ADDRESS
-              value: unix:{{ .Values.signalsciences.socketAddress }}
-      {{- end }}
+              value: unix:{{ .Values.signalsciences.socketDir }}/{{ .Values.signalsciences.socketFile }}
             - name: SIGSCI_HOSTNAME
               valueFrom:
                 fieldRef:
@@ -62,9 +60,6 @@ spec:
                 secretKeyRef:
                   name: {{ template "signalsciences.accessKeyIdSecretName" . }}
                   key: accessKeyId
-          securityContext:
-            # The sigsci-agent container should run with its root filesystem read only
-            readOnlyRootFilesystem: true
           resources:
 {{ toYaml .Values.signalsciences.resources | indent 12 }}
   updateStrategy:

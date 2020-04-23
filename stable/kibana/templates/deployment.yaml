@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
@@ -13,10 +13,6 @@ metadata:
 {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: {{ template "kibana.name" . }}
-      release: {{ .Release.Name }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   template:
     metadata:
@@ -40,7 +36,7 @@ spec:
       initContainers:
 {{- if .Values.initContainers }}
 {{- range $key, $value := .Values.initContainers }}
-      - name: {{ $key | quote }}
+      - name: "{{ $key }}"
 {{ toYaml $value | indent 8 }}
 {{- end }}
 {{- end }}
@@ -57,8 +53,8 @@ spec:
 {{- end }}
         env:
         {{- range $key, $value := .Values.env }}
-        - name: {{ $key | quote }}
-          value: {{ tpl $value $ | quote }}
+        - name: "{{ $key }}"
+          value: "{{ $value }}"
         {{- end }}
         volumeMounts:
         - name: {{ template "kibana.fullname" . }}-dashboards
@@ -112,8 +108,8 @@ spec:
             done
         env:
         {{- range $key, $value := .Values.env }}
-        - name: {{ $key | quote }}
-          value: {{ tpl $value $ | quote }}
+        - name: "{{ $key }}"
+          value: "{{ $value }}"
         {{- end }}
         volumeMounts:
         - name: plugins
@@ -141,18 +137,9 @@ spec:
         {{- end }}
         env:
         {{- range $key, $value := .Values.env }}
-        - name: {{ $key | quote }}
-          value: {{ tpl $value $ | quote }}
+        - name: "{{ $key }}"
+          value: "{{ $value }}"
         {{- end }}
-{{- if .Values.envFromSecrets }}
-        {{- range $key,$value := .Values.envFromSecrets }}
-        - name: {{ $key | upper | quote}}
-          valueFrom:
-            secretKeyRef:
-              name: {{ $value.from.secret | quote}}
-              key: {{ $value.from.key | quote}}
-        {{- end }}
-{{- end }}
 {{- if (not .Values.authProxyEnabled) }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}

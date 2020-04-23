@@ -3,8 +3,6 @@
 sentry:
   dsn: <change-me>
   logLevel: ~
-# Sentry DSN config using an existing secret:
-# existingSecret:
 image:
   repository: getsentry/sentry-kubernetes
   tag: latest
@@ -27,6 +25,3 @@ serviceAccount:
 rbac:
   # Specifies whether RBAC resources should be created
   create: true
-
-# Set priorityCLassName in deployment
-# priorityClassName: ""

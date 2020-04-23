@@ -1,8 +1,7 @@
 {{- if .Values.uiIngress.enabled -}}
 {{- $releaseName := .Release.Name -}}
 {{- $servicePort := .Values.HttpPort -}}
-{{- $serviceName := include "consul.fullname" . -}}
-{{- $serviceHost := .Values.uiIngress.path }}
+{{- $serviceName := printf "%s-%s" (include "consul.fullname" .) "ui" -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -28,9 +27,6 @@ spec:
           - backend:
               serviceName: {{ $serviceName }}
               servicePort: {{ $servicePort }}
-          {{- if $serviceHost }}
-            path: {{ $serviceHost }}
-          {{- end }}
   {{- end -}}
   {{- if .Values.uiIngress.tls }}
   tls:

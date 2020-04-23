@@ -1,5 +1,5 @@
 {{- if .Values.pushgateway.enabled -}}
-apiVersion: {{ template "prometheus.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
@@ -7,17 +7,9 @@ metadata:
   name: {{ template "prometheus.pushgateway.fullname" . }}
 spec:
   selector:
-    {{- if .Values.schedulerName }}
-    schedulerName: "{{ .Values.schedulerName }}"
-    {{- end }}
     matchLabels:
       {{- include "prometheus.pushgateway.matchLabels" . | nindent 6 }}
   replicas: {{ .Values.pushgateway.replicaCount }}
-  {{- if .Values.pushgateway.strategy }}
-  strategy:
-{{ toYaml .Values.pushgateway.strategy | trim | indent 4 }}
-    {{ if eq .Values.pushgateway.strategy.type "Recreate" }}rollingUpdate: null{{ end }}
-{{- end }}
   template:
     metadata:
     {{- if .Values.pushgateway.podAnnotations }}
@@ -28,10 +20,6 @@ spec:
         {{- include "prometheus.pushgateway.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ template "prometheus.serviceAccountName.pushgateway" . }}
-      {{- if .Values.pushgateway.extraInitContainers }}
-      initContainers:
-{{ toYaml .Values.pushgateway.extraInitContainers | indent 8 }}
-      {{- end }}
 {{- if .Values.pushgateway.priorityClassName }}
       priorityClassName: "{{ .Values.pushgateway.priorityClassName }}"
 {{- end }}
@@ -45,22 +33,12 @@ spec:
           {{- end }}
           ports:
             - containerPort: 9091
-          livenessProbe:
-            httpGet:
-            {{- if (index .Values "pushgateway" "extraArgs" "web.route-prefix") }}
-              path: /{{ index .Values "pushgateway" "extraArgs" "web.route-prefix" }}/-/healthy
-            {{- else }}
-              path: /-/healthy
-            {{- end }}
-              port: 9091
-            initialDelaySeconds: 10
-            timeoutSeconds: 10
           readinessProbe:
             httpGet:
             {{- if (index .Values "pushgateway" "extraArgs" "web.route-prefix") }}
-              path: /{{ index .Values "pushgateway" "extraArgs" "web.route-prefix" }}/-/ready
+              path: /{{ index .Values "pushgateway" "extraArgs" "web.route-prefix" }}/#/status
             {{- else }}
-              path: /-/ready
+              path: /#/status
             {{- end }}
               port: 9091
             initialDelaySeconds: 10
@@ -72,7 +50,7 @@ spec:
             - name: storage-volume
               mountPath: "{{ .Values.pushgateway.persistentVolume.mountPath }}"
               subPath: "{{ .Values.pushgateway.persistentVolume.subPath }}"
-          {{- end }}
+          {{- end }}  
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
       {{ toYaml .Values.imagePullSecrets | indent 2 }}

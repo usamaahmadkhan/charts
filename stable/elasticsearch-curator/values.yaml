@@ -6,15 +6,12 @@ cronjob:
   # At 01:00 every day
   schedule: "0 1 * * *"
   annotations: {}
-  labels: {}
   concurrencyPolicy: ""
   failedJobsHistoryLimit: ""
   successfulJobsHistoryLimit: ""
-  jobRestartPolicy: Never
 
 pod:
   annotations: {}
-  labels: {}
 
 rbac:
   # Specifies whether RBAC should be enabled
@@ -33,8 +30,8 @@ psp:
   create: false
 
 image:
-  repository: untergeek/curator
-  tag: 5.7.6
+  repository: quay.io/pires/docker-elasticsearch-curator
+  tag: 5.5.4
   pullPolicy: IfNotPresent
 
 hooks:
@@ -44,7 +41,7 @@ hooks:
 # run curator in dry-run mode
 dryrun: false
 
-command: ["/curator/curator"]
+command: ["curator"]
 env: {}
 
 configMaps:

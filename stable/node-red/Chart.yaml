@@ -1,8 +1,8 @@
 apiVersion: v1
-appVersion: 1.0.4
-description: Node-RED is low-code programming for event-driven applications
+appVersion: 0.19.6
+description: Node-RED is flow-based programming for the Internet of Things
 name: node-red
-version: 1.4.2
+version: 1.2.1
 keywords:
   - nodered
   - node-red
@@ -14,5 +14,3 @@ sources:
 maintainers:
   - name: billimek
     email: jeff@billimek.com
-  - name: batazor
-    email: batazor111@gmail.com

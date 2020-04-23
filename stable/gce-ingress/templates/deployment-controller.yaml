@@ -61,7 +61,7 @@ spec:
           secret:
             secretName: {{ .Values.secret }}
             items:
-              - key: {{ default "key.json" .Values.secretKey }}
+              - key: key.json
                 path: key.json
       {{- end }}
         - name: gce-config-volume

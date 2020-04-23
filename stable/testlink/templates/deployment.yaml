@@ -1,4 +1,4 @@
-apiVersion: {{ template "testlink.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "testlink.fullname" . }}
@@ -130,6 +130,8 @@ spec:
         volumeMounts:
         - name: testlink-data
           mountPath: /bitnami/testlink
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "testlink.metrics.image" . }}
@@ -161,7 +163,10 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "testlink.fullname" . }}-apache
+      {{- else }}
+        emptyDir: {}
       {{- end }}

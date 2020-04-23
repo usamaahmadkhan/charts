@@ -14,18 +14,14 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - monitoring.coreos.com
+  - {{ .Values.prometheusOperator.crdApiGroup | default "monitoring.coreos.com" }}
   resources:
   - alertmanagers
   - prometheuses
-  - thanosrulers
   - prometheuses/finalizers
   - alertmanagers/finalizers
-  - thanosrulers/finalizers
   - servicemonitors
-  - podmonitors
   - prometheusrules
-  - podmonitors
   verbs:
   - '*'
 - apiGroups:
@@ -52,13 +48,11 @@ rules:
   - ""
   resources:
   - services
-  - services/finalizers
   - endpoints
   verbs:
   - get
   - create
   - update
-  - delete
 - apiGroups:
   - ""
   resources:

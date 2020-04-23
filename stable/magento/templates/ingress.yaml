@@ -5,7 +5,7 @@ metadata:
   name: {{ template "magento.fullname" . }}
   labels:
     app: "{{ template "magento.fullname" . }}"
-    chart: {{ .Chart.Name | quote }}
+    chart: "{{ template "magento.chart" . }}"
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
   annotations:

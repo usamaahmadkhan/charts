@@ -20,19 +20,14 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.externalPort }}
-      targetPort: http
+      targetPort: {{ .Values.service.internalPort }}
       protocol: TCP
-      name: http
+      name: {{ .Values.service.name }}
   selector:
     app: {{ template "sonarqube.name" . }}
     release: {{ .Release.Name }}
   {{- if eq .Values.service.type "LoadBalancer"}}
-  {{- if .Values.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-  {{- range .Values.service.loadBalancerSourceRanges }}
-  - {{ . }}
-  {{- end }}
-  {{- end -}}
+  loadBalancerSourceRanges: {{.Values.service.loadBalancerSourceRanges}}
   {{- if .Values.service.loadBalancerIP}}
   loadBalancerIP: {{.Values.service.loadBalancerIP}}
   {{- end }}

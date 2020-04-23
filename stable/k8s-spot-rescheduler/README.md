@@ -26,7 +26,3 @@ helm install \
 ## Configuration
 
 Add the parameters to `cmdOptions` which you want to use. Here is [the full list of available options](https://github.com/pusher/k8s-spot-rescheduler#flags).
-
-| Parameter                          | Description                                                                                                                | Default                                            |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `priorityClassName`                | priorityClassName                                                                                                          | `""`    

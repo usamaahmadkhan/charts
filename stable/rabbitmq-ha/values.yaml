@@ -30,11 +30,6 @@ extraPlugins: |
   rabbitmq_federation_management,
 
 definitions:
-  globalParameters: |-
-#    {
-#        "name": "cluster_name",
-#        "value": "rabbitmq-ha"
-#    }
   users: |-
 #   {
 #     "name": "myUsername",
@@ -65,14 +60,6 @@ definitions:
 #     "user": "myUsername",
 #     "vhost": "/rabbit",
 #     "configure": ".*",
-#     "write": ".*",
-#     "read": ".*"
-#   }
-  topicPermissions: |-
-#   {
-#     "user": "myUsername",
-#     "vhost": "/rabbit",
-#     "exchange": "myexchange",
 #     "write": ".*",
 #     "read": ".*"
 #   }
@@ -118,8 +105,6 @@ definitions:
 #      }
 #    }
 
-## Ref: https://www.rabbitmq.com/rabbitmqctl.8.html#force_boot
-forceBoot: false
 
 ## RabbitMQ default VirtualHost
 ## Ref: https://www.rabbitmq.com/vhosts.html
@@ -261,27 +246,6 @@ rabbitmqWebSTOMPPlugin:
     # web_stomp.ws_frame = binary
     # web_stomp.cowboy_opts.max_keepalive = 10
 
-## Prometheus Plugin
-## Ref: https://www.rabbitmq.com/prometheus.html
-rabbitmqPrometheusPlugin:
-  enabled: false
-
-  ## NodePort
-  nodePort: null
-
-  ## metrics port, overrides configuration:
-  ## prometheus.tcp.port
-  port: 15692
-
-  ## metrics path, overrides configuration:
-  ## prometheus.path
-  path: /metrics
-
-  ## Prometheus configuration:
-  ## https://github.com/rabbitmq/rabbitmq-prometheus
-  config: |
-   ## prometheus.path and prometheus.tcp.port can be set above
-
 ## AMQPS support
 ## Ref: http://www.rabbitmq.com/ssl.html
 rabbitmqAmqpsSupport:
@@ -304,7 +268,7 @@ replicaCount: 3
 
 image:
   repository: rabbitmq
-  tag: 3.8.0-alpine
+  tag: 3.7.12-alpine
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
@@ -315,8 +279,8 @@ image:
 
 busyboxImage:
   repository: busybox
-  tag: 1.30.1
-  pullPolicy: IfNotPresent
+  tag: latest
+  pullPolicy: Always
 
 ## Duration in seconds the pod needs to terminate gracefully
 terminationGracePeriodSeconds: 10
@@ -331,7 +295,6 @@ service:
   externalIPs: []
 
   loadBalancerIP: ""
-  externalTrafficPolicy: ""
   loadBalancerSourceRanges: []
   type: ClusterIP
 
@@ -378,12 +341,6 @@ initContainer:
   #     cpu: 100m
   #     memory: 128Mi
 
-## Additional init containers
-extraInitContainers: []
-
-## Additional containers
-extraContainers: []
-
 ## Use an alternate scheduler, e.g. "stork".
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 ##
@@ -399,14 +356,11 @@ persistentVolume:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
-  ## selector can be used to match an existing PersistentVolume
-  selector: {}
   name: data
   accessModes:
     - ReadWriteOnce
   size: 8Gi
   annotations: {}
-  labels: {}
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
@@ -421,19 +375,10 @@ tolerations: []
 ## Extra Annotations to be added to pod
 podAnnotations: {}
 
-## Extra Annotations to be added to the StatefulSet
-statefulSetAnnotations: {}
-
 ## Pod affinity
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 podAntiAffinity: soft
 podAntiAffinityTopologyKey: "kubernetes.io/hostname"
-
-## Affinity settings
-## Defining 'affinity' will disable any podAntiAffinity settings.
-## If you still need anti-affinity, you must include the configuration here.
-##
-affinity: {}
 
 ## Create default configMap
 ##
@@ -459,10 +404,6 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   # name:
 
-  ## Automount API credentials for a service account.
-  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server
-  automountServiceAccountToken: true
-
 ingress:
   ## Set to true to enable ingress record generation
   enabled: false
@@ -480,7 +421,7 @@ ingress:
   tlsSecret: myTlsSecret
 
   ## Ingress annotations done as key:value pairs
-  annotations: {}
+  annotations:
   #  kubernetes.io/ingress.class: nginx
 
 livenessProbe:
@@ -488,22 +429,12 @@ livenessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 6
-  exec:
-    command:
-      - /bin/sh
-      - -c
-      - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
 
 readinessProbe:
-  initialDelaySeconds: 20
-  periodSeconds: 5
-  timeoutSeconds: 3
   failureThreshold: 6
-  exec:
-    command:
-      - /bin/sh
-      - -c
-      - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
+  initialDelaySeconds: 20
+  timeoutSeconds: 3
+  periodSeconds: 5
 
 # Specifies an existing secret to be used for RMQ password, management user password and Erlang Cookie
 existingSecret: ""
@@ -516,9 +447,6 @@ securityContext:
   runAsGroup: 101
   runAsNonRoot: true
   runAsUser: 100
-
-## Sets environment variables for the rabbitmq container
-env: {}
 
 prometheus:
   ## Configures Prometheus Exporter to expose and scrape stats.
@@ -580,5 +508,3 @@ clusterDomain: cluster.local
 podDisruptionBudget: {}
   # maxUnavailable: 1
   # minAvailable: 1
-
-lifecycle: {}

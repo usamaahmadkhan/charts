@@ -1,4 +1,3 @@
-{{- if .Values.tests.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -8,7 +7,7 @@ metadata:
 spec:
   initContainers:
     - name: "test-framework"
-      image: {{ template "mariadb.tests.testFramework.image" . }}
+      image: "dduportal/bats:0.4.0"
       command:
         - "bash"
         - "-c"
@@ -16,9 +15,6 @@ spec:
           set -ex
           # copy bats to tools dir
           cp -R /usr/local/libexec/ /tools/bats/
-      {{- if .Values.tests.testFramework.resources }}
-      resources: {{ toYaml .Values.tests.testFramework.resources | nindent 8 }}
-      {{- end }}
       volumeMounts:
       - mountPath: /tools
         name: tools
@@ -31,11 +27,12 @@ spec:
         - name: MARIADB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mariadb.secretName" . }}
+            {{- if .Values.existingSecret }}
+              name: {{ .Values.existingSecret }}
+            {{- else }}
+              name: {{ template "mariadb.fullname" . }}
+            {{- end }}
               key: mariadb-root-password
-      {{- if .Values.tests.resources }}
-      resources: {{ toYaml .Values.tests.resources | nindent 8 }}
-      {{- end }}
       volumeMounts:
       - mountPath: /tests
         name: tests
@@ -49,4 +46,3 @@ spec:
   - name: tools
     emptyDir: {}
   restartPolicy: Never
-{{- end }}

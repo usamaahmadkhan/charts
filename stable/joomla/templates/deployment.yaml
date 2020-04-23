@@ -1,5 +1,5 @@
 {{- if or .Values.mariadb.enabled .Values.externalDatabase.host -}}
-apiVersion: {{ template "joomla.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "joomla.fullname" . }}
@@ -135,6 +135,8 @@ spec:
         volumeMounts:
         - name: joomla-data
           mountPath: /bitnami/joomla
+        - name: apache-data
+          mountPath: /bitnami/apache
 {{- if .Values.metrics.enabled }}
       - name: metrics
         image: {{ template "joomla.metrics.image" . }}
@@ -163,6 +165,13 @@ spec:
       {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:
           claimName: {{ template "joomla.fullname" . }}-joomla
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: apache-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "joomla.fullname" . }}-apache
       {{- else }}
         emptyDir: {}
       {{- end }}

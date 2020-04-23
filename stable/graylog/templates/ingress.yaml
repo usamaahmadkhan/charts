@@ -1,5 +1,4 @@
 {{- if .Values.graylog.ingress.enabled -}}
-{{- $extraPaths := .Values.graylog.ingress.extraPaths -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -8,7 +7,11 @@ metadata:
     {{ $key }}: {{ $value | quote }}
   {{- end }}
   labels:
-{{ include "graylog.metadataLabels" . | indent 4 }}
+    app.kubernetes.io/name: {{ template "graylog.name" . }}
+    helm.sh/chart: {{ template "graylog.chart" . }}
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
     app.kubernetes.io/component: "web"
   name: {{ template "graylog.fullname" . }}-web
 spec:
@@ -17,9 +20,6 @@ spec:
     - host: {{ . }}
       http:
         paths:
-          {{ if $extraPaths }}
-{{ toYaml $extraPaths | indent 10 }}
-          {{- end }}
           - backend:
               serviceName: {{ template "graylog.fullname" $ }}-web
               servicePort: graylog

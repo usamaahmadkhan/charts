@@ -1,5 +1,5 @@
 {{- if include "prestashop.host" . -}}
-apiVersion: {{ template "prestashop.deployment.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "prestashop.fullname" . }}
@@ -157,6 +157,9 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         volumeMounts:
+        - mountPath: /bitnami/apache
+          name: prestashop-data
+          subPath: apache
         - mountPath: /bitnami/prestashop
           name: prestashop-data
           subPath: prestashop
@@ -190,9 +193,5 @@ spec:
           claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "prestashop.fullname" . }}-prestashop{{- end }}
       {{- else }}
         emptyDir: {}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
       {{- end }}
 {{- end -}}

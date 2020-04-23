@@ -32,13 +32,25 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Get the user defined LoadBalancerIP for this release.
+Note, returns 127.0.0.1 if using ClusterIP.
+*/}}
+{{- define "nextcloud.serviceIP" -}}
+{{- if eq .Values.service.type "ClusterIP" -}}
+127.0.0.1
+{{- else -}}
+{{- index .Values (printf "%sLoadBalancerIP" .Chart.Name) | default "" -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
-Create a default fully qualified redis app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+Gets the host to be used for this application.
+If not using ClusterIP, or if a host or LoadBalancerIP is not defined, the value will be empty.
 */}}
-{{- define "nextcloud.redis.fullname" -}}
-{{- printf "%s-%s" .Release.Name "redis" | trunc 63 | trimSuffix "-" -}}
+{{- define "nextcloud.host" -}}
+{{- $host := index .Values (printf "%sHost" .Chart.Name) | default "" -}}
+{{- default (include "nextcloud.serviceIP" .) $host -}}
 {{- end -}}
 
 {{/*

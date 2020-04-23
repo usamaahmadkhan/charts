@@ -4,11 +4,10 @@ kind: ConfigMap
 metadata:
   name: {{ template "datadog.fullname" . }}-confd
   labels:
-    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    app.kubernetes.io/name: "{{ template "datadog.fullname" . }}"
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app: "{{ template "datadog.fullname" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
   annotations:
     checksum/confd-config: {{ tpl (toYaml .Values.datadog.confd) . | sha256sum }}
     checksum/autoconf-config: {{ tpl (toYaml .Values.datadog.autoconf) . | sha256sum }}
@@ -19,8 +18,8 @@ override duplicates
 */}}
 {{- if .Values.datadog.autoconf }}
 {{ tpl (toYaml .Values.datadog.autoconf) . | indent 2 }}
-{{- end }}
+{{- end -}}
 {{- if .Values.datadog.confd }}
 {{ tpl (toYaml .Values.datadog.confd) . | indent 2 }}
-{{- end }}
+{{- end -}}
 {{- end -}}

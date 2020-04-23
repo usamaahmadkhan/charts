@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: DaemonSet
 metadata:
   name: {{ template "metallb.fullname" . }}-speaker
@@ -28,16 +28,9 @@ spec:
         prometheus.io/port: "7472"
 {{- end }}
     spec:
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
       serviceAccountName: {{ template "metallb.speakerServiceAccountName" . }}
       terminationGracePeriodSeconds: 0
       hostNetwork: true
-{{- if gt (len .Values.speaker.initContainers) 0 }}
-      initContainers:
-{{ toYaml .Values.speaker.initContainers | indent 8 }}
-{{- end }}
       containers:
       - name: speaker
         image: {{ .Values.speaker.image.repository }}:{{ .Values.speaker.image.tag }}
@@ -50,10 +43,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: METALLB_HOST
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
         ports:
         - name: monitoring
           containerPort: 7472
@@ -66,12 +55,9 @@ spec:
             drop:
             - ALL
             add:
-            - NET_ADMIN
             - NET_RAW
-            - SYS_ADMIN
+    {{- with .Values.speaker.nodeSelector }}
       nodeSelector:
-        "beta.kubernetes.io/os": linux
-        {{- with .Values.speaker.nodeSelector }}
 {{ toYaml . | indent 8 }}
     {{- end }}
     {{- with .Values.speaker.tolerations }}

@@ -30,7 +30,6 @@ rules:
   resources:
   - statefulsets
   - deployments
-  - replicasets
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources:

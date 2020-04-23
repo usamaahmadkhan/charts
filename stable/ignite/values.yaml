@@ -3,7 +3,7 @@ replicaCount: 2
 
 image:
   repository: apacheignite/ignite
-  tag: 2.7.6
+  tag: 2.7.0
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -15,9 +15,6 @@ rbac:
 serviceAccount:
   create: true
   name:
-
-dataStorage:
-  config: |-
 
 env:
   OPTION_LIBS: "ignite-kubernetes,ignite-rest-http"

@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "drone.fullname" . }}
 {{- $httpPort := .Values.service.httpPort }}
-apiVersion: {{ template "drone.ingress.apiVersion" . }}
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -20,15 +20,13 @@ spec:
     - host: {{ . }}
       http:
         paths:
-        {{- if $.Values.ingress.path }}
-          - path: {{ $.Values.ingress.path }}
-        {{- else if index $.Values.ingress "annotations" }}
-          {{- if eq (index $.Values.ingress.annotations "kubernetes.io/ingress.class" | default "") "gce" "alb" "istio" }}
+        {{- if index $.Values.ingress "annotations" }}
+          {{- if eq (index $.Values.ingress.annotations "kubernetes.io/ingress.class" | default "") "gce" "alb" }}
           - path: /*
-          {{- else }}{{/* Has annotations but ingress class is not "gce" nor "alb" nor "istio" */}}
+          {{- else }}{{/* Has annotations but ingress class is not "gce" nor "alb" */}}
           - path: /
           {{- end }}
-        {{- else }}{{/* Has no annotations */}}
+        {{- else}}{{/* Has no annotations */}}
           - path: /
         {{- end }}
             backend:

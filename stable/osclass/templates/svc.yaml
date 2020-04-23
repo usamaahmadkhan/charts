@@ -4,7 +4,7 @@ metadata:
   name: {{ template "osclass.fullname" . }}
   labels:
     app: {{ template "osclass.fullname" . }}
-    chart: {{ template "osclass.chart" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:

@@ -16,11 +16,8 @@ controller:
   name: controller
   image:
     repository: quay.io/jcmoraisjr/haproxy-ingress
-    tag: "v0.7.2"
+    tag: "v0.7.1"
     pullPolicy: IfNotPresent
-
-  imagePullSecrets: []
-  # - name: secret-name
 
   ## Additional command line arguments to pass to haproxy-ingress-controller
   ## E.g. to specify the default SSL certificate you can use
@@ -111,9 +108,6 @@ controller:
   # to keep resolving names inside the k8s network, use ClusterFirstWithHostNet.
   dnsPolicy: ClusterFirst
 
-  # How many seconds to wait before terminating a pod.
-  terminationGracePeriodSeconds: 60
-
   ## DaemonSet or Deployment
   ##
   kind: Deployment
@@ -201,17 +195,15 @@ controller:
 
     httpPorts:
       - port: 80
-        targetPort: http
       # nodePort:
     httpsPorts:
       - port: 443
-        targetPort: https
       # nodePort:
 
     ## Set external traffic policy to: "Local" to preserve source IP on
     ## providers supporting it
     ## Ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
-    externalTrafficPolicy: Local
+    externalTrafficPolicy: ""
 
     healthCheckNodePort: 0
 

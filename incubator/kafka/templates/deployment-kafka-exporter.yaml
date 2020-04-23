@@ -1,15 +1,19 @@
 {{- if .Values.prometheus.kafka.enabled }}
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "kafka.fullname" . }}-exporter
   labels:
-  {{- include "kafka.monitor.labels" . | nindent 4 }}
+    app: "{{ template "kafka.name" . }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:
   replicas: 1
   selector:
     matchLabels:
-    {{- include "kafka.monitor.matchLabels" . | nindent 6 }}
+      app: {{ template "kafka.name" . }}-exporter
+      release: {{ .Release.Name }}
   template:
     metadata:
       annotations:
@@ -18,7 +22,8 @@ spec:
         prometheus.io/port: {{ .Values.prometheus.kafka.port | quote }}
 {{- end }}
       labels:
-      {{- include "kafka.monitor.labels" . | nindent 8 }}
+        app: {{ template "kafka.name" . }}-exporter
+        release: {{ .Release.Name }}
     spec:
       containers:
       - image: "{{ .Values.prometheus.kafka.image }}:{{ .Values.prometheus.kafka.imageTag }}"

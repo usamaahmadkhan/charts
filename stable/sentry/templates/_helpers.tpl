@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "sentry.name" -}}
+{{- define "name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -11,7 +11,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "sentry.fullname" -}}
+{{- define "fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -28,84 +28,55 @@ If release name contains chart name it will be used as a full name.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "sentry.postgresql.fullname" -}}
-{{- if .Values.postgresql.fullnameOverride -}}
-{{- .Values.postgresql.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.postgresql.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name "sentry-postgresql" | trunc 63 | trimSuffix "-" -}}
+{{- define "postgresql.fullname" -}}
+{{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+{{- define "redis.fullname" -}}
+{{- printf "%s-%s" .Release.Name "redis" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
-{{- end -}}
-{{- define "sentry.redis.fullname" -}}
-{{- if .Values.redis.fullnameOverride -}}
-{{- .Values.redis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.redis.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name "sentry-redis" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-{{- define "sentry.smtp.fullname" -}}
-{{- printf "%s-%s" .Release.Name "sentry-smtp" | trunc 63 | trimSuffix "-" -}}
+{{- define "smtp.fullname" -}}
+{{- printf "%s-%s" .Release.Name "smtp" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Set postgres host
 */}}
-{{- define "sentry.postgresql.host" -}}
+{{- define "postgresql.host" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- template "sentry.postgresql.fullname" . -}}
+{{- template "postgresql.fullname" . -}}
 {{- else -}}
-{{- .Values.postgresql.postgresqlHost | quote -}}
+{{- .Values.postgresql.postgresHost | quote -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Set postgres secret
 */}}
-{{- define "sentry.postgresql.secret" -}}
+{{- define "postgresql.secret" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- template "sentry.postgresql.fullname" . -}}
+{{- template "postgresql.fullname" . -}}
 {{- else -}}
-{{- template "sentry.fullname" . -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Set postgres secretKey
-*/}}
-{{- define "sentry.postgresql.secretKey" -}}
-{{- if .Values.postgresql.enabled -}}
-"postgresql-password"
-{{- else -}}
-{{- default "postgresql-password" .Values.postgresql.existingSecretKey | quote -}}
+{{- template "fullname" . -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Set postgres port
 */}}
-{{- define "sentry.postgresql.port" -}}
+{{- define "postgresql.port" -}}
 {{- if .Values.postgresql.enabled -}}
     "5432"
 {{- else -}}
-{{- default "5432" .Values.postgresql.postgresqlPort | quote -}}
+{{- default "5432" .Values.postgresql.postgresPort | quote -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Set redis host
 */}}
-{{- define "sentry.redis.host" -}}
+{{- define "redis.host" -}}
 {{- if .Values.redis.enabled -}}
-{{- template "sentry.redis.fullname" . -}}-master
+{{- template "redis.fullname" . -}}-master
 {{- else -}}
 {{- .Values.redis.host | quote -}}
 {{- end -}}
@@ -114,43 +85,21 @@ Set redis host
 {{/*
 Set redis secret
 */}}
-{{- define "sentry.redis.secret" -}}
+{{- define "redis.secret" -}}
 {{- if .Values.redis.enabled -}}
-{{- template "sentry.redis.fullname" . -}}
+{{- template "redis.fullname" . -}}
 {{- else -}}
-{{- template "sentry.fullname" . -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Set redis secretKey
-*/}}
-{{- define "sentry.redis.secretKey" -}}
-{{- if .Values.redis.enabled -}}
-"redis-password"
-{{- else -}}
-{{- default "redis-password" .Values.redis.existingSecretKey | quote -}}
+{{- template "fullname" . -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Set redis port
 */}}
-{{- define "sentry.redis.port" -}}
+{{- define "redis.port" -}}
 {{- if .Values.redis.enabled -}}
     "6379"
 {{- else -}}
 {{- default "6379" .Values.redis.port | quote -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "sentry.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "sentry.fullname" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}

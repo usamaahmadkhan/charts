@@ -3,7 +3,10 @@ kind: Service
 metadata:
   name: {{ include "kafka.fullname" . }}-headless
   labels:
-  {{- include "kafka.broker.labels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 {{- if .Values.headless.annotations }}
@@ -18,4 +21,5 @@ spec:
 {{- end }}
   clusterIP: None
   selector:
-  {{- include "kafka.broker.matchLabels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}
+    release: {{ .Release.Name }}

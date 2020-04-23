@@ -3,7 +3,10 @@ kind: Service
 metadata:
   name: {{ include "kafka.fullname" . }}
   labels:
-  {{- include "kafka.broker.labels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   ports:
   - name: broker
@@ -16,7 +19,8 @@ spec:
     targetPort: prometheus
 {{- end }}
   selector:
-  {{- include "kafka.broker.matchLabels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}
+    release: {{ .Release.Name }}
 ---
 {{- if and .Values.prometheus.kafka.enabled .Values.prometheus.operator.enabled }}
 apiVersion: v1
@@ -24,7 +28,10 @@ kind: Service
 metadata:
   name: {{ include "kafka.fullname" . }}-exporter
   labels:
-  {{- include "kafka.monitor.labels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}-exporter
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   ports:
   - name: kafka-exporter
@@ -32,5 +39,6 @@ spec:
     port: {{ .Values.prometheus.kafka.port }}
     targetPort: {{ .Values.prometheus.kafka.port }}
   selector:
-  {{- include "kafka.monitor.matchLabels" . | nindent 4 }}
+    app: {{ include "kafka.name" . }}-exporter
+    release: {{ .Release.Name }}
 {{- end }}
